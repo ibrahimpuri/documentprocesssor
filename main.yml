@@ -1,0 +1,46 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run tests
+      run: |
+        pytest
+
+    - name: Build Docker image
+      run: |
+        docker build -t document-processor .
+
+    - name: Log in to AWS ECR
+      run: |
+        aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin <aws-account-id>.dkr.ecr.us-west-2.amazonaws.com
+
+    - name: Push Docker image to ECR
+      run: |
+        docker tag document-processor:latest <aws-account-id>.dkr.ecr.us-west-2.amazonaws.com/document-processor:latest
+        docker push <aws-account-id>.dkr.ecr.us-west-2.amazonaws.com/document-processor:latest
+
+    - name: Deploy to ECS
+      run: |
+        ecs-cli configure --cluster document-processor-cluster --region us-west-2 --default-launch-type FARGATE
+        ecs-cli compose up

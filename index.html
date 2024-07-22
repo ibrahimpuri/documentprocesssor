@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Processor</title>
+</head>
+<body>
+    <h1>Upload Document</h1>
+    <form id="upload-form">
+        <label for="doc-type">Document Type:</label>
+        <select id="doc-type" name="doc-type">
+            <option value="invoice">Invoice</option>
+            <option value="medical_report">Medical Report</option>
+            <option value="news_article">News Article</option>
+        </select><br><br>
+        <label for="content">Content:</label><br>
+        <textarea id="content" name="content" rows="10" cols="50"></textarea><br><br>
+        <button type="submit">Submit</button>
+    </form>
+    <div id="result"></div>
+    <script>
+        document.getElementById('upload-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const docType = document.getElementById('doc-type').value;
+            const content = document.getElementById('content').value;
+            const response = await fetch('/upload', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ type: docType, content: content })
+            });
+            const result = await response.json();
+            document.getElementById('result').textContent = JSON.stringify(result, null, 2);
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+spacy
+requests
+matplotlib
+seaborn
+plotly
